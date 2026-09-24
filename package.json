@@ -1,0 +1,22 @@
+{
+  "name": "playwright-typescript-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sailyjadhav/playwright-typescript-framework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sailyjadhav/playwright-typescript-framework/issues"
+  },
+  "homepage": "https://github.com/sailyjadhav/playwright-typescript-framework#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.2"
+  }
+}
