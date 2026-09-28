@@ -1,5 +1,10 @@
 # Decision log
 
+## 2026-09-28: ESLint with typescript-eslint and eslint-plugin-playwright
+- Decision: I added ESLint with three rule sets: basic JavaScript rules, type-aware TypeScript rules, and Playwright rules limited to the tests folder. I also changed no-wait-for-timeout from a warning to an error.
+- Reason: The type-aware rule no-floating-promises catches a missing await, even on my own functions, which would otherwise let a test pass without checking anything. Warnings do not fail the lint, so I made hard waits an error to enforce the "no hard waits" rule.
+- Alternative rejected: Biome is faster and combines linting and formatting in one tool, but it has no mature Playwright plugin and weaker missing-await checking.
+
 ## 2026-09-28: TypeScript 6.0 instead of TypeScript 7
 - Decision: I pinned TypeScript to ~6.0.3 (patch updates only) instead of the latest TypeScript 7.
 - Reason: typescript-eslint, which ESLint needs to read TypeScript files and to provide no-floating-promises, only supports TypeScript below 6.1. TypeScript 7 was rebuilt as a native program and no longer ships the JavaScript API that typescript-eslint uses. I will upgrade when typescript-eslint supports TypeScript 7.
