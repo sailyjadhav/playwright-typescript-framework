@@ -1,5 +1,11 @@
 # Decision log
 
+## 2026-09-28: Prettier for formatting, with eslint-config-prettier
+
+- Decision: I added Prettier (single quotes, 100-character lines), pinned to an exact version, and eslint-config-prettier as the last item in the ESLint config.
+- Reason: ESLint finds mistakes and Prettier handles layout, so each tool has one job. eslint-config-prettier turns off ESLint's formatting rules so the two tools never fight. I pinned Prettier exactly because even small updates can change formatting, and then everyone would see unrelated changes.
+- Alternative rejected: eslint-plugin-prettier runs Prettier inside ESLint, which means one command, but it is slower and fills the editor with formatting underlines that hide real mistakes. The Prettier docs advise against it.
+
 ## 2026-09-28: ESLint with typescript-eslint and eslint-plugin-playwright
 
 - Decision: I added ESLint with three rule sets: basic JavaScript rules, type-aware TypeScript rules, and Playwright rules limited to the tests folder. I also changed no-wait-for-timeout from a warning to an error.

@@ -5,12 +5,13 @@ Playwright runs TypeScript but does not check it, so these checks fill that gap.
 
 ## The checks
 
-| Command             | What it catches                                                       | Example                                     |
-| ------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
-| `npm run typecheck` | Type mistakes: typos in property names, values that might be missing  | `patient.agee` instead of `patient.age`     |
-| `npm run lint`      | Risky code patterns: missing `await`, hard waits, `test.only` left in | `expect(...).toBeVisible()` without `await` |
+| Command                | What it catches                                                       | Example                                     |
+| ---------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| `npm run typecheck`    | Type mistakes: typos in property names, values that might be missing  | `patient.agee` instead of `patient.age`     |
+| `npm run lint`         | Risky code patterns: missing `await`, hard waits, `test.only` left in | `expect(...).toBeVisible()` without `await` |
+| `npm run format:check` | Messy layout: spacing, quotes, long lines                             | `"double"` quotes instead of `'single'`     |
 
-Run both before every commit. Both must show zero errors.
+Run all three before every commit. All must pass. To fix formatting, run `npm run format`.
 
 ## Proof: TypeScript catches type mistakes
 
