@@ -5,10 +5,10 @@ Playwright runs TypeScript but does not check it, so these checks fill that gap.
 
 ## The checks
 
-| Command | What it catches | Example |
-| --- | --- | --- |
-| `npm run typecheck` | Type mistakes: typos in property names, values that might be missing | `patient.agee` instead of `patient.age` |
-| `npm run lint` | Risky code patterns: missing `await`, hard waits, `test.only` left in | `expect(...).toBeVisible()` without `await` |
+| Command             | What it catches                                                       | Example                                     |
+| ------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| `npm run typecheck` | Type mistakes: typos in property names, values that might be missing  | `patient.agee` instead of `patient.age`     |
+| `npm run lint`      | Risky code patterns: missing `await`, hard waits, `test.only` left in | `expect(...).toBeVisible()` without `await` |
 
 Run both before every commit. Both must show zero errors.
 
@@ -19,8 +19,8 @@ I planted two mistakes in a temporary file:
 ```ts
 const patient = { name: 'John', age: 45 };
 const ages: number[] = [45];
-console.log(patient.agee);       // typo
-console.log(ages[5].toFixed());  // item 5 does not exist
+console.log(patient.agee); // typo
+console.log(ages[5].toFixed()); // item 5 does not exist
 ```
 
 `npm run typecheck` caught both:
@@ -37,6 +37,7 @@ error TS2532: Object is possibly 'undefined'.
 
 I planted four mistakes in a temporary test:
 
+<!-- prettier-ignore -->
 ```ts
 import { test, expect } from '@playwright/test';
 
@@ -52,12 +53,12 @@ test.only('broken demo', async ({ page }) => {            // line 5: test.only l
 
 `npm run lint` caught all of them:
 
-| Line | Mistake | Rule that caught it |
-| --- | --- | --- |
-| 5 | `test.only` left in | `playwright/no-focused-test` |
-| 7 | Hard wait | `playwright/no-wait-for-timeout` |
-| 8 | Missing `await` on `expect` | `@typescript-eslint/no-floating-promises` and `playwright/missing-playwright-await` |
-| 9 | Missing `await` on my own function | `@typescript-eslint/no-floating-promises` only |
+| Line | Mistake                            | Rule that caught it                                                                 |
+| ---- | ---------------------------------- | ----------------------------------------------------------------------------------- |
+| 5    | `test.only` left in                | `playwright/no-focused-test`                                                        |
+| 7    | Hard wait                          | `playwright/no-wait-for-timeout`                                                    |
+| 8    | Missing `await` on `expect`        | `@typescript-eslint/no-floating-promises` and `playwright/missing-playwright-await` |
+| 9    | Missing `await` on my own function | `@typescript-eslint/no-floating-promises` only                                      |
 
 Line 9 shows why both rules are needed: the Playwright rule only knows Playwright's own functions,
 while `no-floating-promises` uses types, so it also catches my own async functions.
