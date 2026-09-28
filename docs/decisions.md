@@ -1,5 +1,10 @@
 # Decision log
 
+## 2026-09-28: Type-checking with tsconfig.json and npm run typecheck
+- Decision: I added a tsconfig.json with strict mode and noUncheckedIndexedAccess turned on, and an `npm run typecheck` script that runs `tsc --noEmit`.
+- Reason: Playwright runs TypeScript files but does not check the types, so without tsc, type errors could reach CI unnoticed. Strict mode does not include noUncheckedIndexedAccess, so I turned it on separately to catch missing items in lists and API responses before the tests run. I also set "types": ["node"] because TypeScript 7 no longer loads @types packages automatically, and the Playwright config uses process.env.
+- Alternative rejected: Extending a ready-made base config such as @tsconfig/node22 would have meant less typing, but the settings would be hidden inside a package, and I could not explain each one in an interview.
+
 ## 2026-09-26: Demo application for the framework
 - Decision: I chose Automation Exercise (automationexercise.com) as the application under test.
 - Reason: It supports both UI and API testing in one application (login, product catalogue, cart, and a published list of API endpoints), so every session in this framework tells one consistent story.

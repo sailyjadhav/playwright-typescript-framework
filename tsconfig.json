@@ -1,0 +1,15 @@
+{
+  // Used by `npm run typecheck` (tsc --noEmit). Playwright itself only reads `paths`/`baseUrl` from here.
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    // TypeScript 7 loads no @types packages unless listed; "node" gives us process.env.
+    "types": ["node"],
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["playwright.config.ts", "tests", "pages", "components", "fixtures", "data", "utils"]
+}
