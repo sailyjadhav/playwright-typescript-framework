@@ -144,4 +144,61 @@ every PR is checked automatically.
 
 ## Session 2: The config file
 
-_To be added at Gate 4._
+### Playbook questions
+
+**Why retries on CI but not locally?**
+On CI, retries separate real failures from flaky ones, and the first retry records a trace for
+evidence. Locally I use zero retries so I see failures immediately. Retries label flakiness; they do
+not fix it.
+
+**What does `baseURL` give you when the app moves to a staging server?**
+Tests use short paths like `/login`, so moving to staging means changing `BASE_URL` once, in `.env`
+or in CI, with no test changes. I can also override it for one run from the command line.
+
+**Why is `.env` ignored but `.env.example` committed?**
+`.env` holds real values, and later secrets, so it is never committed. `.env.example` is a template
+listing the settings with safe values; a new person copies it to `.env`. My fail-fast error points
+to it.
+
+### The config file
+
+**What is the difference between `.env`, dotenv and `process.env`?**
+`.env` is the file that holds the values. dotenv is the package that reads it into `process.env`.
+The config only reads `process.env`, so it works locally from `.env` and on CI from CI's own
+environment variables.
+
+**Why does the config throw when `BASE_URL` is missing instead of using a default?**
+A default could quietly test the wrong environment and give a false pass. A clear error that points
+to `.env.example` takes seconds to fix.
+
+**Why is `video` `retain-on-failure` but `screenshot` `only-on-failure`?**
+A screenshot can be taken at the moment of failure. A video must be recorded from the start, so
+Playwright records every test and keeps the video only if it failed.
+
+**Typecheck and lint passed with `testDir: '/test'`, but no tests were found. Why?**
+Static checks confirm code is well-formed, not that values are right. To TypeScript, `'/test'` is
+just a string. Running the tests found it, which is why Gate 3 includes a real test run.
+
+### Break drills
+
+**What happens with `test.only` when `CI=true`?**
+`forbidOnly` stops the run before any test starts and points at the exact line. On my laptop,
+`.only` is allowed for debugging.
+
+**A test fails with one retry. What evidence do you get?**
+The test runs twice. Both attempts save a screenshot and a video; only the retry records a trace,
+because trace is set to `on-first-retry`.
+
+### The quality script
+
+**What does `&&` do in the `quality` script?**
+It runs the next command only if the previous one passed, so `quality` stops at the first failure
+with one clear error.
+
+**What is an exit code, and why does CI care?**
+The number a command returns: 0 for success, anything else for failure. CI uses it to decide pass
+or fail. My `quality` script returned 2 with a planted type error.
+
+**Why a single `quality` command when the three scripts exist?**
+One command is easy to remember and impossible to half-run. My laptop and CI run the same checks,
+and a new check is added in one place.
