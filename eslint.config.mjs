@@ -2,6 +2,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import playwright from 'eslint-plugin-playwright';
+import prettierConfig from 'eslint-config-prettier/flat';
 
 export default defineConfig([
   globalIgnores(['playwright-report/', 'test-results/']),
@@ -32,4 +33,7 @@ export default defineConfig([
       'playwright/no-wait-for-timeout': 'error',
     },
   },
+
+  // Must stay last: turns off ESLint formatting rules so they don't fight Prettier.
+  prettierConfig,
 ]);
