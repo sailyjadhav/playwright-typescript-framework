@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-09-29: Fail fast when BASE_URL is missing
+
+- Decision: The config throws a clear error when BASE_URL is missing, and the message tells the reader to set it in .env (see .env.example).
+- Reason: Without this check, a missing or broken setting could make the tests run against the wrong site and still pass. Stopping straight away is safer than guessing. Break drill 1 confirmed the run stops before any browser opens.
+- Alternative rejected: Falling back to a default address would "just work", but it could silently test the wrong environment and give a false pass.
+
+## 2026-09-29: dotenv to load .env
+
+- Decision: I used the dotenv package, with quiet: true, so the Playwright config reads BASE_URL from the .env file.
+- Reason: On CI there is no .env file, because it is not committed; CI will provide BASE_URL as an environment variable instead. dotenv skips a missing file quietly, so the same config works on my laptop and on CI. It is also the approach the Playwright template suggests.
+- Alternative rejected: Node's built-in process.loadEnvFile() needs no install, but it throws an ENOENT error when .env is missing, so I would need extra code to handle CI.
+
 ## 2026-09-28: Prettier for formatting, with eslint-config-prettier
 
 - Decision: I added Prettier (single quotes, 100-character lines), pinned to an exact version, and eslint-config-prettier as the last item in the ESLint config.
