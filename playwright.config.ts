@@ -1,79 +1,44 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Load values from .env into process.env (quiet: true hides dotenv's log line).
+dotenv.config({ quiet: true });
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+// Fail fast: stop the run if BASE_URL is missing, instead of testing the wrong site.
+const baseURL = process.env.BASE_URL;
+if (!baseURL) {
+  throw new Error('BASE_URL is missing. Please set it in your .env file (see .env.example).');
+}
+
 export default defineConfig({
+  // Where tests live; a test may take 30 s, and an assertion keeps retrying for up to 5 s.
   testDir: './tests',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+  timeout: 30_000,
+  expect: { timeout: 5_000 },
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+  // Retry and forbid test.only on CI only; locally we want to see failures straight away.
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  // One worker on CI for stability (to be tuned in Session 10).
+  workers: process.env.CI ? 1 : undefined,
+
+  // HTML report for detail, list for live progress in the terminal.
+  reporter: [['html'], ['list']],
+
+  use: {
+    // Tests call page.goto('/path'); the site is chosen by BASE_URL in .env.
+    baseURL,
+    // Evidence on failure: trace when a test is retried, screenshot and video only when it fails.
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
-  /* Configure projects for major browsers */
+  // Every test runs once per browser engine: Chrome, Firefox and Safari.
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });

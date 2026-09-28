@@ -11,7 +11,8 @@ Playwright runs TypeScript but does not check it, so these checks fill that gap.
 | `npm run lint`         | Risky code patterns: missing `await`, hard waits, `test.only` left in | `expect(...).toBeVisible()` without `await` |
 | `npm run format:check` | Messy layout: spacing, quotes, long lines                             | `"double"` quotes instead of `'single'`     |
 
-Run all three before every commit. All must pass. To fix formatting, run `npm run format`.
+Run all three before every commit with one command: `npm run quality`.
+It runs them in order and stops at the first failure. To fix formatting, run `npm run format`.
 
 ## Proof: TypeScript catches type mistakes
 
