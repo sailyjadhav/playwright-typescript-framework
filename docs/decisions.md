@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-09-29: getByTestId with data-qa for the login form fields
+
+- Decision: The login email and password fields are found with getByTestId, and playwright.config.ts sets testIdAttribute to data-qa, the attribute the site already uses.
+- Reason: getByLabel is impossible because the fields have no labels, and getByRole('textbox', { name: 'Email Address' }) matches three boxes on the page (login, signup and newsletter), which fails Playwright's strict mode. data-qa gives exactly one match. Every other locator stays semantic (getByRole).
+- Alternative rejected: Narrowing to the login form first (a form that has a Login button, then getByRole inside it) keeps the locator closer to what the user sees, but needs a CSS 'form' selector and a longer chain; codegen suggested a similar chain.
+
+## 2026-09-29: Home page test checks the static "Features Items" heading
+
+- Decision: Test 1 checks the page title and the "Features Items" heading instead of the large "AutomationExercise" heading.
+- Reason: The large heading sits in a sliding carousel. I checked it 141 times over 15 seconds and 12 times two copies were visible during a slide change, which would fail strict mode at random and make the test flaky.
+- Alternative rejected: Using .first() on the carousel heading would pass, but it hides the ambiguity instead of fixing it and still depends on moving content.
+
 ## 2026-09-29: Fail fast when BASE_URL is missing
 
 - Decision: The config throws a clear error when BASE_URL is missing, and the message tells the reader to set it in .env (see .env.example).
