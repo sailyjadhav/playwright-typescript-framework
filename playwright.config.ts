@@ -33,6 +33,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    testIdAttribute: 'data-qa', // The site has no form labels; its data-qa attributes are the stable way to find inputs.
   },
 
   // Every test runs once per browser engine: Chrome, Firefox and Safari.

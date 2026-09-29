@@ -202,3 +202,50 @@ or fail. My `quality` script returned 2 with a planted type error.
 **Why a single `quality` command when the three scripts exist?**
 One command is easy to remember and impossible to half-run. My laptop and CI run the same checks,
 and a new check is added in one place.
+
+## Session 3: First real test
+
+### Playbook questions
+
+**Why `getByRole` over a CSS selector?**
+getByRole describes what the user sees, so it survives markup changes and also checks
+accessibility. CSS describes internal structure and breaks when the layout changes. I use anything
+else only where nothing semantic works, and explain the exception in a comment.
+
+**How does `toBeVisible` avoid a hard wait?**
+It is web-first: it retries until the element is visible or the 5-second expect timeout runs out,
+so it waits exactly as long as needed. My ESLint config blocks `waitForTimeout` completely.
+
+**When is a non-retrying assertion correct?**
+When the value is already final, such as a count I captured, an API status code or computed data.
+Anything on a live page gets a web-first assertion.
+
+### My first tests
+
+**Why does the home page test not check the big "AutomationExercise" heading?**
+It sits in a sliding carousel. I checked it 141 times over 15 seconds and 12 times two copies were
+visible, which fails strict mode at random. I chose the static "Features Items" heading instead of
+hiding the problem with `.first()`.
+
+**Why is `getByTestId` acceptable for the login fields but not everywhere?**
+The fields have no labels and the page has three "Email Address" boxes, so nothing semantic gives
+one match. The site's `data-qa` attribute does, set once as `testIdAttribute` in the config. Every
+other locator is getByRole.
+
+**Why does test 3 open `/login` directly instead of clicking the menu link?**
+So the tests stay independent. Test 2 already checks the link; if it breaks, only test 2 fails and
+test 3 still reports whether login errors work.
+
+### Break drills
+
+**Why does a wrong locator on a click fail after 30 seconds, but a failed assertion after 5?**
+Actions wait until the test timeout (30 s); assertions retry for the expect timeout (5 s). The
+timing of a failure tells me which kind of step failed.
+
+**The expected text was wrong but the real message appeared. Why did the test fail?**
+A test checks exactly what I wrote, not what I meant. The trace snapshot showed the real message,
+which proved it was a test bug, not an app bug.
+
+**What does an offline failure look like compared with a server error?**
+Offline gives `net::ERR_INTERNET_DISCONNECTED` almost instantly, with no status code, because no
+server was reached. A status like 403 or 502 means the server answered with an error.
