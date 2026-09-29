@@ -1,5 +1,11 @@
 # Decision log
 
+## 2026-09-29: Removed tests/example.spec.ts
+
+- Decision: I deleted the example test that the Playwright setup wizard created.
+- Reason: It tested playwright.dev, not Automation Exercise, and my own tests in tests/ui/ now cover the application. Keeping it would add runs and results that say nothing about my app.
+- Alternative rejected: Keeping it as a syntax reference would mix sample code with my work; the same example is always in the Playwright documentation.
+
 ## 2026-09-29: getByTestId with data-qa for the login form fields
 
 - Decision: The login email and password fields are found with getByTestId, and playwright.config.ts sets testIdAttribute to data-qa, the attribute the site already uses.
