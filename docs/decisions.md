@@ -1,5 +1,23 @@
 # Decision log
 
+## 2026-09-30: Page objects expose locators; assertions stay in tests
+
+- Decision: Page objects expose their locators as readonly properties, and tests assert on them, for example `await expect(loginPage.errorMessage).toBeVisible()`. Page objects contain actions only, never assertions.
+- Reason: `expect(locator)` is a web-first assertion that retries until the timeout, so tests keep Playwright's auto-waiting. Keeping assertions out of pages lets the same action serve different tests: `login()` is used for both a wrong and a correct password.
+- Alternative rejected: Methods such as `isErrorShown()` that return true or false would hide an `isVisible()` call, which checks only once and brings back the flakiness web-first assertions remove.
+
+## 2026-09-30: Only create page objects that tests use
+
+- Decision: I created LoginPage, HomePage and the Header component now, and will add ProductsPage and CartPage in the session whose tests need them.
+- Reason: A locator that no test uses is never checked, so it could be wrong without anyone noticing. Every class in the repo should be used and explainable.
+- Alternative rejected: Creating every page from the playbook list now would match the list, but it would add untested code.
+
+## 2026-09-30: Composition for shared page parts
+
+- Decision: Pages contain shared parts as components, for example `HomePage` has a `header: Header`, instead of extending a base page class.
+- Reason: Each page shows exactly what it has, a change to a component only affects pages that use it, and there is no base class that grows with every "just one more helper".
+- Alternative rejected: A BasePage that every page extends means less typing at first, but every page inherits everything in it, and over time it becomes a large class where one change can break unrelated pages.
+
 ## 2026-09-29: Removed tests/example.spec.ts
 
 - Decision: I deleted the example test that the Playwright setup wizard created.
