@@ -288,3 +288,43 @@ Inheritance is "is a": the child gets everything from the parent automatically. 
 **How did you prove the Page Object Model helps?**
 I changed one locator in `LoginPage`. Only the test using it failed, on all three browsers, with
 "element(s) not found", and the other six runs passed. Fixing that one line restored all nine.
+
+## Session 5: Custom fixtures
+
+### Playbook questions
+
+**Why fixtures instead of `beforeEach`, and when?**
+Fixtures are on-demand, typed and reusable across files, and they keep setup and teardown together
+around `use`. Test 3 asks only for `loginPage`, so no `HomePage` is created for it. For simple setup
+that every test in one small file needs, `beforeEach` is fine and easier to read.
+
+**When would you choose worker scope?**
+For expensive, read-only setup such as an auth token or a database connection, created once per
+worker and shared. In a drill, nine tests created a worker fixture three times with one worker (once
+per browser) but eight times with four workers. Anything a test can change, or anything that needs a
+page, stays test-scoped.
+
+**What code runs after `await use()`?**
+Teardown: it runs after the test finishes, even when the test fails. The `await` is essential;
+without it, teardown runs before the test.
+
+### My fixtures
+
+**What is a fixture, in one sentence?**
+A recipe that prepares something for a test, hands it over with `use`, and cleans up afterwards; the
+test just asks for it by name. Playwright's own `page` is a fixture.
+
+**Why do all tests import `test` and `expect` from your fixture file?**
+It is the single front door: a fixture added there is available in every test without changing
+imports. I checked that eslint-plugin-playwright still recognises my custom `test`.
+
+### Break drills
+
+**How did a passing test hide a bug?**
+With `await` removed before `use`, the test still passed, but the logs showed teardown running before
+the test. ESLint's `no-floating-promises` caught it even though the test did not, which is why lint is
+a separate quality gate.
+
+**In what order do setup, test and teardown run?**
+Setup, then the test, then teardown; the log lines printed 1, 2, 3, and teardown still printed when
+the test failed.
