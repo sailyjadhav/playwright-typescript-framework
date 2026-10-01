@@ -249,3 +249,42 @@ which proved it was a test bug, not an app bug.
 **What does an offline failure look like compared with a server error?**
 Offline gives `net::ERR_INTERNET_DISCONNECTED` almost instantly, with no status code, because no
 server was reached. A status like 403 or 502 means the server answered with an error.
+
+## Session 4: Page Object Model
+
+### Playbook questions
+
+**Why are assertions kept out of page objects?**
+So actions stay reusable: `login()` serves both the wrong-password and the correct-password tests,
+and only the test knows what to check. It also keeps assertions web-first, because the test calls
+`expect` on the page object's locator.
+
+**When would you use a component object?**
+For any UI part that repeats across pages, such as the header, footer or a modal. Pages include it
+by composition, so its locators exist once and a change to it is one edit. A part that appears on
+only one page stays in that page class.
+
+**What are the risks of a large base page class?**
+It becomes a dumping ground: every page inherits everything, pages carry helpers they do not need,
+a change ripples into unrelated tests, and you must read two classes to understand one. I use
+composition instead.
+
+### My page objects
+
+**What does the constructor do in a page object?**
+It runs once when a test calls `new LoginPage(page)`, receives that test's page and builds every
+locator. Locators are lazy descriptions, so creating them before navigating is safe.
+
+**Why are the locators `readonly`?**
+They are fixed after construction, so no test can reassign them. With strict mode, this also caught
+my misspelled `constructor`: six fields were reported as never initialised before any test ran.
+
+**What is the difference between composition and inheritance?**
+Inheritance is "is a": the child gets everything from the parent automatically. Composition is
+"has a": an object is built from smaller parts it chooses. `HomePage` has a `Header`.
+
+### Break drill
+
+**How did you prove the Page Object Model helps?**
+I changed one locator in `LoginPage`. Only the test using it failed, on all three browsers, with
+"element(s) not found", and the other six runs passed. Fixing that one line restored all nine.
