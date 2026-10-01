@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-10-02: Named type for the fixture list
+
+- Decision: fixtures/pages.ts declares a named type, PageFixtures, listing every fixture and its type, and passes it to base.extend<PageFixtures>.
+- Reason: The named type reads like a menu of what the file offers, and it stays readable as fixtures are added, one line per fixture.
+- Alternative rejected: Writing the type inline, base.extend<{ loginPage: LoginPage; homePage: HomePage }>, works the same but grows into one long line that is harder to scan.
+
+## 2026-10-02: Page objects as fixtures instead of beforeEach
+
+- Decision: Tests receive page objects as fixtures, for example async ({ loginPage }) => ..., and every test imports test and expect from fixtures/pages.ts.
+- Reason: Fixtures are created only for tests that ask for them, are fully typed, and can be reused in any test file. Setup and teardown sit together around use(), so later fixtures that need cleanup, such as a temporary user, keep it in one place.
+- Alternative rejected: beforeEach with an outer let variable is simpler to read, but it runs for every test in the group whether needed or not, works only inside one file, and shares state through a variable that can be reassigned by mistake.
+
 ## 2026-09-30: Page objects expose locators; assertions stay in tests
 
 - Decision: Page objects expose their locators as readonly properties, and tests assert on them, for example `await expect(loginPage.errorMessage).toBeVisible()`. Page objects contain actions only, never assertions.
