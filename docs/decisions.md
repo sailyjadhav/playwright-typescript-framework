@@ -6,6 +6,18 @@
 - Reason: Two tests for one condition add run time and maintenance without adding coverage. The data-driven version covers that case and six more.
 - Alternative rejected: Keeping it as a simple example beside the page-object tests would duplicate coverage, and the data-driven spec already shows the pattern.
 
+## 2026-10-03: Search terms limited to ones that match product names
+
+- Decision: The product search test uses terms whose results all contain the term in the product name (Jeans, Saree, Polo, Blue), plus one term with no results.
+- Reason: Before writing the assertion I checked the live site: its search also matches categories, so "Top" returns shirts filed under Tops and "Dress" returns a gown. With those terms, "every result contains the term" would fail even though search works.
+- Alternative rejected: Checking that one expected product appears would work for any term, but it ignores every other result. Exact result counts would break whenever the shop adds a product.
+
+## 2026-10-03: CSS exceptions on the products page
+
+- Decision: ProductsPage finds the search button by its id (#submit_search) and the result names by .productinfo p, each with a comment explaining why.
+- Reason: The search button is an icon with no text or label, so it has no accessible name and getByRole cannot find it; that is also an accessibility gap for screen-reader users. Product cards have no roles or test IDs, and each name repeats in a hover overlay.
+- Alternative rejected: Opening /products?search=term directly would avoid CSS, but it would skip the search box and button that a user actually uses.
+
 ## 2026-10-03: Browser validation checked by field state, not message text
 
 - Decision: Cases the browser rejects (empty fields, malformed email) are checked with toHaveJSProperty('validity.valid', false) on the field named in the data row.

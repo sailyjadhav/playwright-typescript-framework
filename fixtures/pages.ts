@@ -1,11 +1,13 @@
 import { test as base } from '@playwright/test';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
+import { ProductsPage } from '../pages/ProductsPage';
 
 // The fixture menu: every page object a test can ask for by name.
 type PageFixtures = {
   homePage: HomePage;
   loginPage: LoginPage;
+  productsPage: ProductsPage;
 };
 
 // Our own test: Playwright's test plus the page-object fixtures. Code before use() is setup,
@@ -16,6 +18,9 @@ export const test = base.extend<PageFixtures>({
   },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
+  },
+  productsPage: async ({ page }, use) => {
+    await use(new ProductsPage(page));
   },
 });
 
