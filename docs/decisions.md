@@ -1,5 +1,23 @@
 # Decision log
 
+## 2026-10-03: Removed the single invalid-login test from home-and-login.spec.ts
+
+- Decision: I deleted the "invalid credentials show an error message" test, because the data-driven "unknown email" row in invalid-login.spec.ts checks exactly the same thing.
+- Reason: Two tests for one condition add run time and maintenance without adding coverage. The data-driven version covers that case and six more.
+- Alternative rejected: Keeping it as a simple example beside the page-object tests would duplicate coverage, and the data-driven spec already shows the pattern.
+
+## 2026-10-03: Browser validation checked by field state, not message text
+
+- Decision: Cases the browser rejects (empty fields, malformed email) are checked with toHaveJSProperty('validity.valid', false) on the field named in the data row.
+- Reason: The browser blocks these before the form is sent, and its message wording differs per browser ("Please fill out this field." in Chromium and Firefox, "Fill out this field" in WebKit). The validity state is the same everywhere. I confirmed the check fails for a valid email, so it cannot pass falsely.
+- Alternative rejected: Asserting the message text would need a different expected value per browser.
+
+## 2026-10-03: Separate data-driven loops per kind of outcome
+
+- Decision: Invalid-login cases are split into two typed lists, rejectedByServer (expects the site's error message) and rejectedByBrowser (expects an invalid field), each with its own loop.
+- Reason: The site rejects bad logins in two different ways, so the expected result differs. Separate loops keep each test free of if/else, which eslint-plugin-playwright's no-conditional-in-test rule discourages, and every run of a test takes the same path.
+- Alternative rejected: One list with a type field and an if/else inside the test would mean different rows take different paths through the same test.
+
 ## 2026-10-02: Named type for the fixture list
 
 - Decision: fixtures/pages.ts declares a named type, PageFixtures, listing every fixture and its type, and passes it to base.extend<PageFixtures>.
