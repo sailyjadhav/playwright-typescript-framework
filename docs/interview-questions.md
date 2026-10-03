@@ -328,3 +328,50 @@ a separate quality gate.
 **In what order do setup, test and teardown run?**
 Setup, then the test, then teardown; the log lines printed 1, 2, 3, and teardown still printed when
 the test failed.
+
+## Session 6: Data-driven tests
+
+### Playbook questions
+
+**When is a soft assertion the wrong choice?**
+When later steps depend on it. If the page did not load or login failed, carrying on only produces
+confusing follow-on failures. My search test uses hard assertions for the heading and first result,
+and soft ones for each product name.
+
+**How do you keep data-driven tests independent in parallel runs?**
+Each row becomes its own test that sets itself up, gets a fresh page from test-scoped fixtures and
+shares no changeable state. Titles come from the data, so they are unique. When a test creates data,
+such as an account, I make it unique per run with a timestamp so parallel workers never collide.
+(This is about independent tests, not soft assertions, which are about independent checks inside one
+test.)
+
+**Why type your test data?**
+A malformed row fails at typecheck, before any test runs, with the exact line and often a suggested
+fix. In a drill, a number instead of an email and a typo in a field name were both caught by
+typecheck; run without it, they failed mid-test with confusing errors. Lint did not catch them,
+because lint checks code patterns, not types.
+
+### My data-driven tests
+
+**Why two separate loops for invalid login?**
+The site rejects bad logins in two ways: the server shows an error, or the browser blocks the form
+and marks a field invalid. Each needs a different check, and separate loops keep if/else out of the
+tests.
+
+**Why check `validity.valid` instead of the browser's message?**
+The wording differs per browser ("Please fill out this field." versus "Fill out this field"). The
+validity state is the same everywhere, and I confirmed it fails for a valid email.
+
+**How did you choose your search test data?**
+I checked the live site first: search also matches categories, so "Top" returns shirts. I kept terms
+whose results all contain the term in the name, plus one term with no results.
+
+### Break drills
+
+**What happened when two rows produced the same title?**
+Playwright refused to run with "duplicate test title". I had used normal quotes instead of backticks,
+so `${...}` was not filled in and every row got the same title.
+
+**What does a failing soft assertion look like?**
+With "Top", all 14 names were checked, both shirts were reported in one run, and the test was marked
+failed at the end.
