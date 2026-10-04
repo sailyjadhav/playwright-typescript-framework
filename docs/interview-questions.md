@@ -375,3 +375,52 @@ so `${...}` was not filled in and every row got the same title.
 **What does a failing soft assertion look like?**
 With "Top", all 14 names were checked, both shirts were reported in one run, and the test was marked
 failed at the end.
+
+## Session 7: Authentication
+
+### Playbook questions
+
+**Why save the state instead of logging in for every test?**
+Logging in once per run is faster, gives one clearly labelled place where login can fail
+(`[setup] › authenticate`), and keeps each test to the steps it is actually testing. When my password
+was wrong, only the setup step failed, with a clear screenshot.
+
+**What are the risks of a shared logged-in state across parallel tests?**
+Every test that loads the saved state is the same user at the same time. If one logs out, the server
+can end the session for the others; if one changes the cart, another test sees it; a long run can
+outlive the session. Shared-state tests only read, and anything that changes account data or logs out
+uses its own account, for example one per worker with a worker-scoped fixture.
+
+**How do credentials reach the tests in CI?**
+They are stored as encrypted GitHub repository secrets, and the workflow passes them in as
+environment variables. My code reads `process.env` either way: locally from the git-ignored `.env`
+via dotenv, in CI from the environment, where dotenv finds no file and changes nothing. GitHub masks
+the values in logs.
+
+### My authentication setup
+
+**Why does the setup check the Logout link before saving the state?**
+So a failed login is never saved as if it worked. With a wrong password, setup failed clearly and no
+auth file was created, instead of every logged-in test failing later with a confusing error.
+
+**Why must `playwright/.auth/user.json` never be committed?**
+It holds a live login cookie: anyone with the file is logged in as the test user without the
+password. It lives in the git-ignored `.auth/` folder, which I confirmed with `git check-ignore -v`.
+
+**Why logged out by default, with logged-in specs opting in?**
+Most of the suite tests the login form and invalid logins, which must start logged out, so opting in
+one file is safer than opting out every other file. I would switch if most tests needed a login.
+
+### Break drills
+
+**What happens when the saved auth file is deleted?**
+The setup project runs first as a dependency and recreates it. Setup runs on every run, so the saved
+login is always fresh.
+
+**What happens if a login-form test starts logged in?**
+It fails: the click on "Signup / Login" waits 30 seconds, because a logged-in user sees "Logout" and
+"Logged in as" instead. That is the risk of a forgotten opt-out.
+
+**How did you tell a real failure from the flaky page load?**
+I re-ran the test. The failures said `page.goto … waiting until "load"`, a slow third-party page load,
+and they happened with or without the auth file, so they were unrelated to my change.

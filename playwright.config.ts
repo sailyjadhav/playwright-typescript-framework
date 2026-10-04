@@ -37,9 +37,11 @@ export default defineConfig({
   },
 
   // Every test runs once per browser engine: Chrome, Firefox and Safari.
+
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, dependencies: ['setup'] },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, dependencies: ['setup'] },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, dependencies: ['setup'] },
   ],
 });
