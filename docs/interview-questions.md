@@ -424,3 +424,52 @@ It fails: the click on "Signup / Login" waits 30 seconds, because a logged-in us
 **How did you tell a real failure from the flaky page load?**
 I re-ran the test. The failures said `page.goto … waiting until "load"`, a slow third-party page load,
 and they happened with or without the auth file, so they were unrelated to my change.
+
+## Session 9: Network control
+
+(Session 9 was done before Session 8 to fix a failing test on main.)
+
+### Playbook questions
+
+**When should a UI test mock the network, and when is that dangerous?**
+Mock or block what is outside the test's job, such as ads, or states that are hard to create, such as
+server errors or a failed image server. Do not mock the feature under test, and keep mocks the same
+shape as the real response: a wrong-shape mock fails for no real reason, and a stale mock can pass
+while the real app is broken. This site is mostly server-rendered, so there are few API calls to
+mock; routing was used to block third parties and simulate failures.
+
+**How do you prove a click triggered the right request?**
+Start `page.waitForResponse` before the click, matching the URL and method (the POST to `/login`),
+then await it and check the status. A click can raise no error while nothing happens, so this proves
+the request actually reached the server.
+
+**Why block third-party ads in tests?**
+They are someone else's system and add noise. One ad request never finished, so `page.goto` waited
+for the load event until the 30 s timeout: the logged-in test failed 4 of 4 on Chromium. An automatic
+fixture that aborts every request not going to the site made it pass 5 of 5, and the suite went from
+about 54 s to 50 s. Reliability was the main gain.
+
+### My network setup
+
+**Why an allowlist instead of a list of ad domains?**
+Ad networks change from load to load; the domain that hung the test did not appear in a later list of
+nine third-party hosts. Allowing only the site blocks new ad domains automatically and follows
+`BASE_URL`.
+
+**Why route at the browser context level, not the page level?**
+The context sees requests from iframes and pop-ups too, and ads usually load in iframes.
+
+**Why does the image-abort test count the aborted requests?**
+So it proves its route matched. With a pattern that matched nothing, everything else in the test still
+passed and only the counter caught it.
+
+### Break drills
+
+**What happens if you abort the site's own JavaScript?**
+The page still loads, because it is server-rendered, and typing and clicking raise no error, but
+search does nothing because the search button only works through JavaScript. No error on a click does
+not mean the click worked; only the assertion afterwards proves the result.
+
+**What happens with a mock of the wrong shape?**
+Answering the search page with JSON made the browser show the raw text instead of a page, so the
+results heading was never found.
