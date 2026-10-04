@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-10-04: Block third-party requests in an automatic fixture
+
+- Decision: fixtures/pages.ts has an automatic fixture, blockThirdPartyRequests, that routes the browser context and aborts every request whose host is not the host of baseURL.
+- Reason: The logged-in home test failed on Chromium in 4 of 4 runs because page.goto waits for the load event, and a third-party ad request (gum.criteo.com) never finished. As an automatic fixture it covers every test and the auth setup with no test changes, and routing the context also catches ads in iframes. After the change the same test passed 5 of 5, and the suite went from about 54 s to about 50 s.
+- Alternative rejected: A test-by-test fixture would be visible in each test but easy to forget in one, which would bring the flake back for that test.
+
+## 2026-10-04: Allowlist the site instead of listing ad domains
+
+- Decision: The blocking rule allows only the site under test and aborts everything else, including Google Fonts.
+- Reason: Ad networks change from load to load: the domain that hung the test did not appear at all in a later measurement of nine third-party hosts. An allowlist blocks new ad domains automatically, and it follows BASE_URL if the tests point at another environment.
+- Alternative rejected: A blocklist of named ad domains keeps fonts loading, but it misses any ad domain not on the list and needs constant updating.
+
 ## 2026-10-04: Credentials checked in the setup file, not the config
 
 - Decision: tests/auth.setup.ts reads TEST_USER_EMAIL and TEST_USER_PASSWORD from .env and throws a clear error if either is missing, at the top of the file rather than inside the test.
