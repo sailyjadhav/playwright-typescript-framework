@@ -1,5 +1,23 @@
 # Decision log
 
+## 2026-10-04: Credentials checked in the setup file, not the config
+
+- Decision: tests/auth.setup.ts reads TEST_USER_EMAIL and TEST_USER_PASSWORD from .env and throws a clear error if either is missing, at the top of the file rather than inside the test.
+- Reason: Only the setup step needs the credentials, and failing fast gives a clear message instead of a confusing login failure. Placing the check outside the test keeps the eslint-plugin-playwright rule no-conditional-in-test satisfied.
+- Alternative rejected: Checking in playwright.config.ts would stop every test, including logged-out ones, whenever the credentials were missing.
+
+## 2026-10-04: Logged out by default; logged-in specs opt in
+
+- Decision: The browser projects do not load the saved login. A spec that needs a logged-in user opts in with test.use({ storageState: 'playwright/.auth/user.json' }); today that is only tests/ui/account.spec.ts.
+- Reason: Most of the suite tests the login form and invalid logins, which must start logged out. Opting in one file is safer than opting out every other file, where a forgotten opt-out breaks the login tests.
+- Alternative rejected: Loading the saved state for every test and opting out in the login specs suits an app where most tests need a logged-in user. I would switch to it if that becomes true here.
+
+## 2026-10-04: Setup project for authentication
+
+- Decision: A setup project runs tests/auth.setup.ts first; it logs in with the loginPage fixture, checks the Logout link is visible, and saves the browser state to playwright/.auth/user.json. The browser projects declare it as a dependency.
+- Reason: Logging in once is faster and gives one place where login can fail instead of every test. As a project, the login appears in the report and trace and can use my fixtures. The saved file holds a live session, so it lives in the git-ignored playwright/.auth/ folder, confirmed with git check-ignore.
+- Alternative rejected: globalSetup runs a plain function before all tests, but outside the test runner, so a failed login has no trace, report entry or fixtures.
+
 ## 2026-10-03: Removed the single invalid-login test from home-and-login.spec.ts
 
 - Decision: I deleted the "invalid credentials show an error message" test, because the data-driven "unknown email" row in invalid-login.spec.ts checks exactly the same thing.
