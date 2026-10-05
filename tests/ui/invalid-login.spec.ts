@@ -3,11 +3,17 @@ import { rejectedByBrowser, rejectedByServer } from '../../data/login-cases';
 
 test.describe('Invalid login rejected by server', () => {
   for (const invalidCase of rejectedByServer) {
-    test(`shows the error for: ${invalidCase.title}`, async ({ loginPage }) => {
-      await loginPage.goto();
-      await loginPage.login(invalidCase.email, invalidCase.password);
-      await expect(loginPage.errorMessage).toBeVisible();
-    });
+    // Tags come from typed data rows (TestTag), which this rule cannot read; TypeScript checks them.
+    // eslint-disable-next-line playwright/valid-test-tags
+    test(
+      `shows the error for: ${invalidCase.title}`,
+      { tag: invalidCase.tags ?? [] },
+      async ({ loginPage }) => {
+        await loginPage.goto();
+        await loginPage.login(invalidCase.email, invalidCase.password);
+        await expect(loginPage.errorMessage).toBeVisible();
+      },
+    );
   }
 });
 

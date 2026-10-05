@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-10-05: Tag mechanics: smoke only, tag option, Chromium, CI workers later
+
+- Decision: Only @smoke (and @creates-account) are tags; regression is the whole suite, and UI or API runs are chosen by project. Tags use the { tag } option, and data rows carry them through a typed tags field (TestTag). Smoke runs on Chromium plus the api project. CI keeps one worker until Session 11 gives real CI timings.
+- Reason: A test's folder and project already say whether it is UI or API, so a tag would repeat that fact and could drift. The { tag } option keeps titles clean and shows tags in the report; the TestTag type makes a mistyped tag fail the typecheck, because the valid-test-tags lint rule cannot read tags that come from data. Chromium-only smoke keeps the push check fast, and nightly regression covers all three browsers.
+- Alternative rejected: Tagging every test with @regression, @ui or @api would be explicit but duplicate information on every test; choosing CI workers now would be a guess with no CI to measure.
+
+## 2026-10-05: Smoke covers each critical area once
+
+- Decision: Six tests are tagged @smoke, one per critical area: home page, navigation to login, a logged-in user, a server-rejected login, product search ("Jeans"), and the search API. Run with npm run test:smoke.
+- Reason: Smoke must give fast feedback on every push, so it covers each critical area once: about 9 s against about 51 s for the full suite. Extra data rows, edge cases, network checks and the account-creating hybrid test stay in regression, which still runs everything.
+- Alternative rejected: Tagging most tests as smoke (16 of 21) would cover more on each push but would be nearly as slow as regression, and would include a test that creates real accounts.
+
 ## 2026-10-05: Delete and update endpoints only on a temporary account
 
 - Decision: API 12 (delete account) and API 13 (update account) are used only inside the hybrid test, on a throwaway account the tempUser fixture creates through the API (with a unique email per run and browser) and deletes in teardown. The test is tagged @creates-account.

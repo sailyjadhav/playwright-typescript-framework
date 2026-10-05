@@ -20,7 +20,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // One worker on CI for stability (to be tuned in Session 10).
+  // One worker on CI for stability; to be tuned in Session 11 with real CI timings.
   workers: process.env.CI ? 1 : undefined,
 
   // HTML report for detail, list for live progress in the terminal.

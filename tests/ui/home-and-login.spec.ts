@@ -7,17 +7,21 @@ import { test, expect } from '../../fixtures/pages';
 
 test.describe('Home and login', () => {
   // Test 1: home page - title plus the static "Features Items" heading (see HomePage).
-  test('home page loads', async ({ homePage, page }) => {
+  test('home page loads', { tag: '@smoke' }, async ({ homePage, page }) => {
     await homePage.goto();
     await expect(page).toHaveTitle('Automation Exercise');
     await expect(homePage.featuresHeading).toBeVisible();
   });
 
   // Test 2: the Signup / Login menu link opens the login form.
-  test('signup / login link opens the login form', async ({ homePage, loginPage, page }) => {
-    await homePage.goto();
-    await homePage.header.openSignupLogin();
-    await expect(page).toHaveURL('/login');
-    await expect(loginPage.heading).toBeVisible();
-  });
+  test(
+    'signup / login link opens the login form',
+    { tag: '@smoke' },
+    async ({ homePage, loginPage, page }) => {
+      await homePage.goto();
+      await homePage.header.openSignupLogin();
+      await expect(page).toHaveURL('/login');
+      await expect(loginPage.heading).toBeVisible();
+    },
+  );
 });
