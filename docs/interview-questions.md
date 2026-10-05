@@ -473,3 +473,45 @@ not mean the click worked; only the assertion afterwards proves the result.
 **What happens with a mock of the wrong shape?**
 Answering the search page with JSON made the browser show the raw text instead of a page, so the
 results heading was never found.
+
+## Session 8: API testing
+
+(Done after Session 9; see the note in the Session 9 section.)
+
+### Playbook questions
+
+**When do you test through the API rather than the UI?**
+API tests are fast and stable, so I use them for business logic, data and error cases, and for test
+setup and cleanup. UI tests prove the real user journey, so I keep fewer of them for the important
+flows. My API tests run in about a second with no browser; the hybrid test combines both.
+
+**Why check the body as well as the status?**
+The status is only the envelope. This API returns HTTP 200 even for errors, with the real code in
+`responseCode` (405 for an unsupported method, 400 for a missing parameter, 404 for an unknown
+email). In a drill, a status-only test passed on a request that failed, so every API test checks the
+status, the `responseCode`, and the message or data shape.
+
+**How does the hybrid test guarantee cleanup?**
+The `tempUser` fixture creates the account before `await use()` and deletes it after, so the delete
+runs even if the test fails. The delete's response is asserted, so a failed cleanup is visible, and
+each run uses a unique email including the browser name, so parallel runs never collide.
+
+### My API tests
+
+**Why does the API have its own project and fixtures file?**
+API tests use no browser: in the browser projects they would run three times, and the automatic
+ad-blocking fixture needs a browser context, so it would start a browser for every API test.
+
+**Why not use the update and delete endpoints on the real test account?**
+Delete would remove the account the auth setup logs in with, and update would change shared state.
+Both run only on a temporary account in the hybrid test, tagged `@creates-account`.
+
+**What did sending the search as JSON teach you?**
+The API accepts form data only: the same search as JSON came back as "parameter is missing". The docs
+did not say so; the live call did, so I check the real API before writing assertions.
+
+### Break drills
+
+**How do a wrong endpoint and a wrong method fail differently?**
+A wrong endpoint returns a real HTTP 404 with an HTML page, so the status check catches it. A wrong
+method returns HTTP 200 with `responseCode` 405, so only the body check catches it.
