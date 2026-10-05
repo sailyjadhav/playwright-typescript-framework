@@ -1,5 +1,11 @@
 # Decision log
 
+## 2026-10-05: Delete and update endpoints only on a temporary account
+
+- Decision: API 12 (delete account) and API 13 (update account) are used only inside the hybrid test, on a throwaway account the tempUser fixture creates through the API (with a unique email per run and browser) and deletes in teardown. The test is tagged @creates-account.
+- Reason: Run against the shared test account, delete would break the auth setup and update would change state other tests rely on. The fixture's teardown runs even when the test fails, so accounts do not pile up, and the delete is asserted. The tag lets the test be run or excluded on purpose.
+- Alternative rejected: Dropping both endpoints would be simpler but would lose the full create, update, read and delete chain, and the hybrid pattern of API setup with UI verification.
+
 ## 2026-10-05: A separate api project with its own fixtures file
 
 - Decision: playwright.config.ts has an api project that runs only tests/api/, the browser projects skip that folder, and API tests import from fixtures/api.ts, which has no browser fixtures.
