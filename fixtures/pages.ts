@@ -1,13 +1,16 @@
-import { test as base } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
+import { accountForm, type TempUser } from '../data/temp-user';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { ProductsPage } from '../pages/ProductsPage';
+import type { ApiMessageResponse } from '../utils/api-types';
 
-// The fixture menu: every page object a test can ask for by name.
+// The fixture menu: every page object a test can ask for by name, plus a throwaway account.
 type PageFixtures = {
   homePage: HomePage;
   loginPage: LoginPage;
   productsPage: ProductsPage;
+  tempUser: TempUser;
 };
 
 // Fixtures that run for every test without being asked for. They give the test nothing (void).
@@ -26,6 +29,25 @@ export const test = base.extend<PageFixtures & AutoFixtures>({
   },
   productsPage: async ({ page }, use) => {
     await use(new ProductsPage(page));
+  },
+  // Creates an account through the API for one test and deletes it afterwards, even if the test
+  // fails. The email is unique per run and browser, so parallel runs never use the same account.
+  tempUser: async ({ request }, use, testInfo) => {
+    const unique = `${Date.now()}-${testInfo.project.name}`;
+    const user: TempUser = {
+      name: 'Temp User',
+      email: `temp.user.${unique}@example.com`,
+      password: `Pw-${unique}`,
+    };
+    const created = await request.post('/api/createAccount', { form: accountForm(user) });
+    expect(((await created.json()) as ApiMessageResponse).responseCode).toBe(201);
+
+    await use(user);
+
+    const deleted = await request.delete('/api/deleteAccount', {
+      form: { email: user.email, password: user.password },
+    });
+    expect(((await deleted.json()) as ApiMessageResponse).responseCode).toBe(200);
   },
   // Abort every request to a host other than the site under test (ads, trackers, fonts).
   // Third-party ads sometimes never finish loading, which made page.goto time out.

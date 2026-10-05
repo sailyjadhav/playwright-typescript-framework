@@ -36,12 +36,29 @@ export default defineConfig({
     testIdAttribute: 'data-qa', // The site has no form labels; its data-qa attributes are the stable way to find inputs.
   },
 
-  // Every test runs once per browser engine: Chrome, Firefox and Safari.
-
+  // setup logs in once and saves the state; UI tests run once per browser engine after it.
+  // API tests need no browser, so they run once, in their own project, and the browser
+  // projects skip them.
   projects: [
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, dependencies: ['setup'] },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, dependencies: ['setup'] },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, dependencies: ['setup'] },
+    { name: 'api', testMatch: /tests\/api\/.*\.spec\.ts/ },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
+      testIgnore: /tests\/api\//,
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      dependencies: ['setup'],
+      testIgnore: /tests\/api\//,
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      dependencies: ['setup'],
+      testIgnore: /tests\/api\//,
+    },
   ],
 });
