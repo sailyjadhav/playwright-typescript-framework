@@ -8,7 +8,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "quality": "npm run typecheck && npm run lint && npm run format:check"
+    "quality": "npm run typecheck && npm run lint && npm run format:check",
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke --project=chromium --project=api",
+    "test:regression": "playwright test",
+    "test:ui": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:api": "playwright test --project=api"
   },
   "repository": {
     "type": "git",

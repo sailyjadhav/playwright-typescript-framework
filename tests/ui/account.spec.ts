@@ -5,7 +5,7 @@ import { test, expect } from '../../fixtures/pages';
 test.use({ storageState: 'playwright/.auth/user.json' });
 
 test.describe('Logged-in user', () => {
-  test('home page shows the Logout link', async ({ homePage }) => {
+  test('home page shows the Logout link', { tag: '@smoke' }, async ({ homePage }) => {
     await homePage.goto();
     await expect(homePage.header.logoutLink).toBeVisible();
   });

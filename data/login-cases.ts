@@ -1,7 +1,11 @@
+import type { TestTag } from '../utils/test-tags';
+
 export type InvalidLoginCase = {
   title: string;
   email: string;
   password: string;
+  // Optional tags for the generated test, for example ['@smoke'].
+  tags?: TestTag[];
 };
 
 export const rejectedByServer: InvalidLoginCase[] = [
@@ -9,6 +13,7 @@ export const rejectedByServer: InvalidLoginCase[] = [
     title: 'unknown email',
     email: 'nobody@example.com',
     password: 'secret123',
+    tags: ['@smoke'],
   },
   {
     title: 'unknown email in capital letters',

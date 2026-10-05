@@ -515,3 +515,41 @@ did not say so; the live call did, so I check the real API before writing assert
 **How do a wrong endpoint and a wrong method fail differently?**
 A wrong endpoint returns a real HTTP 404 with an HTML page, so the status check catches it. A wrong
 method returns HTTP 200 with `responseCode` 405, so only the body check catches it.
+
+## Session 10: Execution control
+
+### Playbook questions
+
+**How do you decide what belongs in smoke?**
+Smoke covers each critical area once, with tests that are fast, stable and do not change data. I chose
+six, one each for home, navigation, a logged-in user, a login error, search and the API: about 9 s
+against 51 s for the full suite. Extra data rows and data-creating tests stay in regression, which
+still runs everything.
+
+**What is the difference between parallel workers and shards?**
+Workers run tests in parallel processes on one machine; shards split the suite across machines, each
+saving a blob report that is merged into one. Three shards would cut my 51 s run to about 31 s, but
+each shard repeats the login setup and shards balance by test count, not time, so I would shard only
+when a suite outgrows one machine.
+
+**What do you do when a test is flaky?**
+Treat it as a defect, not noise: reproduce it with `--repeat-each`, read the trace to find the root
+cause, fix it, and prove it passes without retries. In my drill the trace showed an assertion giving
+up after 1 s while images were still loading; removing that override took it from 5 flaky out of 10
+to 10 out of 10. If it cannot be fixed straight away, mark it `test.fixme` with a reason. See
+`docs/failure-investigations.md`.
+
+### My execution setup
+
+**Why does regression not need its own tag?**
+Regression is the whole suite, so tagging every test would repeat a fact; API versus UI is already
+decided by folder and project.
+
+**How do data rows get the @smoke tag, and why is a type needed?**
+Rows have an optional `tags` field that the loop passes to `{ tag }`. The `valid-test-tags` lint rule
+cannot read tags from data, so the `TestTag` type checks them and a typo fails the typecheck.
+
+**Why did the first attempts at a flaky test not flake?**
+The site is server-rendered and fast, and `click()` waits for the page it opens, so even badly written
+checks passed every time. Flaky bugs often appear only under slower conditions, such as a busy CI
+machine.
