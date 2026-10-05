@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-10-05: A separate api project with its own fixtures file
+
+- Decision: playwright.config.ts has an api project that runs only tests/api/, the browser projects skip that folder, and API tests import from fixtures/api.ts, which has no browser fixtures.
+- Reason: API tests use no browser, so running them in three browser projects repeated the same calls three times. fixtures/pages.ts has an automatic fixture that needs a browser context, so importing it would start a browser for every API test.
+- Alternative rejected: Keeping API tests in the browser projects needs no config change but runs each call three times and opens browsers for nothing.
+
+## 2026-10-05: API assertions check the body as well as the status
+
+- Decision: Every API test checks the HTTP status and the body's responseCode, plus the message or the shape of the data; shapes use Playwright's built-in matchers (expect.objectContaining with expect.any). The negative cases are API 2 (unsupported method) and API 14 with an unknown email.
+- Reason: I checked the live API first: it returns HTTP 200 even for errors and puts the real result (400, 404, 405) in responseCode, so a status check alone would pass on every failure. It also accepts form data only: the same search sent as JSON was reported as a missing parameter.
+- Alternative rejected: The zod library would describe whole shapes with better messages, but it adds a dependency for the few fields these tests check.
+
 ## 2026-10-04: Block third-party requests in an automatic fixture
 
 - Decision: fixtures/pages.ts has an automatic fixture, blockThirdPartyRequests, that routes the browser context and aborts every request whose host is not the host of baseURL.
