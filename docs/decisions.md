@@ -1,5 +1,11 @@
 # Decision log
 
+## 2026-10-06: Accessibility checks with axe, scoped and with a baseline
+
+- Decision: tests/ui/accessibility.spec.ts uses @axe-core/playwright with WCAG 2 A and AA rules in two tests: a strict check scoped to the login form, which must have no violations, and a baseline check on the products page, which fails only on a new kind of violation. The baseline lists rule types (button-name, color-contrast) with reasons, not counts.
+- Reason: A scan of the live site found violations we cannot fix on a demo site (icon-only buttons with no name, including the search and newsletter buttons; low-contrast text such as the orange Signup / Login link), while the login form, the area the suite tests most, is clean. A strict whole-site check would be red forever; scoping and a documented baseline keep results actionable and record the known issues openly. Counts would break whenever the shop adds products.
+- Alternative rejected: Lighthouse or pa11y run outside the test runner, with no fixtures or report integration; @axe-core/playwright is the library the Playwright docs recommend and runs in the existing CI.
+
 ## 2026-10-06: Two workers on CI
 
 - Decision: playwright.config.ts uses two workers on CI and Playwright's default locally.
