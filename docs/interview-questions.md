@@ -596,3 +596,41 @@ browsers separately because `fail-fast` is off, and still uploaded the report.
 **What does a missing secret look like in a run?**
 The log shows the real secret as `***` and the missing one as an empty value; the auth setup stopped
 the whole run at load time with its fail-fast message, before any test started.
+
+## Session 12: Accessibility, README and finish
+
+### Playbook questions
+
+**Walk me through your framework in two minutes.**
+Who: a QA Lead with 12 years of healthcare EHR testing, testing a demo shop's UI and API. How:
+semantic locators and web-first assertions, page objects with a header component by composition,
+custom fixtures, typed data-driven tests with soft assertions, login once through a setup project,
+API tests in their own project, and a hybrid test that sets up through the API. Proof: a quality gate
+and a three-browser matrix in GitHub Actions, and a flaky test traced, fixed and proved 10 of 10.
+Judgement: every decision logged with its rejected alternative, such as blocking third-party ads and
+checking API bodies because the API returns 200 for errors. The README follows this order.
+
+**What would you change if the suite grew to 2,000 tests?**
+Shard across CI machines and merge the reports; move logic checks from UI to API and set up data
+through the API; run smoke on every pull request and the full regression nightly; keep page objects
+small and split fixtures with `mergeTests`; give each worker its own test account; and track flaky
+tests as defects with a dashboard of pass rate, run time and flaky rate.
+
+**What can automated accessibility testing not catch?**
+Meaning and experience. Axe catches rule-based problems such as missing names, labels and low
+contrast; in this framework it found the icon-only search button and the low-contrast login link.
+It cannot judge whether alt text is useful, whether a flow works by keyboard, or whether a screen
+reader makes sense of the page, so automated checks are paired with manual keyboard and
+screen-reader testing.
+
+### My accessibility checks
+
+**Why a scoped strict test and a baseline test?**
+The login form, the area the suite tests most, is clean, so it gets a strict check that fails on
+any violation. The whole products page has issues a demo site cannot fix, so a baseline records the
+known rule types with reasons and fails only on a new kind. A strict whole-site check would be red
+forever.
+
+**Why does the baseline list rule types instead of counts?**
+Counts such as 35 contrast problems change whenever the shop adds a product, so the test would fail
+for no real reason. Rule types still catch a new kind of problem.
