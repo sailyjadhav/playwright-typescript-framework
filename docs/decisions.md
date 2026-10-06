@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-10-06: Two workers on CI
+
+- Decision: playwright.config.ts uses two workers on CI and Playwright's default locally.
+- Reason: The first CI run used one worker, and each browser job spent about 70 s running its tests one at a time (Chromium 69 s, Firefox 67 s, WebKit 75 s). GitHub's runner for public repositories has four cores, and the tests are independent (fresh pages, unique emails per browser, no shared account changes), so running two at a time is safe.
+- Alternative rejected: Keeping one worker is the most stable choice, but it roughly doubles test time per job for no gain in reliability.
+
+## 2026-10-06: CI pipeline shape
+
+- Decision: .github/workflows/playwright.yml runs a quality job first; an API job and a UI job with a Chromium, Firefox and WebKit matrix run only if it passes. The matrix uses fail-fast: false, each UI job installs Chromium as well as its browser, the account-creating test is left out with --grep-invert @creates-account, and each browser's report is uploaded with if: always(). BASE_URL is written in the workflow; the test account comes from repository secrets.
+- Reason: The quality checks take seconds, so failing there saves minutes of browser runs. API tests need no browser. With fail-fast off, every browser reports its result. The login setup project runs in Chromium, so every UI job needs it. Data-creating tests run deliberately, not on every pull request. Reports are uploaded even on failure, when they are needed most. BASE_URL is not secret; the credentials are, and GitHub masks them in logs.
+- Alternative rejected: One job running the whole suite would be simpler, but slower, with no early stop when the quality checks fail and no separate result per browser.
+
 ## 2026-10-05: Tag mechanics: smoke only, tag option, Chromium, CI workers later
 
 - Decision: Only @smoke (and @creates-account) are tags; regression is the whole suite, and UI or API runs are chosen by project. Tags use the { tag } option, and data rows carry them through a typed tags field (TestTag). Smoke runs on Chromium plus the api project. CI keeps one worker until Session 11 gives real CI timings.

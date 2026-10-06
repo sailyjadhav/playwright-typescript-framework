@@ -20,8 +20,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // One worker on CI for stability; to be tuned in Session 11 with real CI timings.
-  workers: process.env.CI ? 1 : undefined,
+  // Two workers on CI: GitHub's runner has 4 cores, and with 1 worker each browser job spent
+  // about 70 s running its tests one at a time. Locally, Playwright's default (half the cores).
+  workers: process.env.CI ? 2 : undefined,
 
   // HTML report for detail, list for live progress in the terminal.
   reporter: [['html'], ['list']],
