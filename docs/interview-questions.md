@@ -553,3 +553,46 @@ cannot read tags from data, so the `TestTag` type checks them and a typo fails t
 The site is server-rendered and fast, and `click()` waits for the page it opens, so even badly written
 checks passed every time. Flaky bugs often appear only under slower conditions, such as a busy CI
 machine.
+
+## Session 11: CI with GitHub Actions
+
+### Playbook questions
+
+**Why run the quality job before the tests?**
+To fail fast and cheaply. Typecheck, lint and format take seconds (about 20 s in my pipeline), while
+each browser job takes minutes. With `needs: quality`, a simple mistake fails the pipeline early and
+the expensive test jobs never start.
+
+**How do secrets reach the tests without appearing in logs?**
+They are stored encrypted in the repository settings, the workflow references them by name
+(`${{ secrets.TEST_USER_EMAIL }}`), and GitHub injects them as environment variables, so my code reads
+`process.env` exactly as it does with `.env` locally. GitHub masks the values as `***` in logs. A
+missing secret arrives empty rather than erroring, so the auth setup fails fast with a message that
+names both `.env` and repository secrets.
+
+**Why upload the report with `if: always()`?**
+When a step fails, later steps are skipped by default, so a failing test step would skip the upload.
+The CI machine is discarded after the run, so the report, with trace, screenshot and video, is the
+only evidence; in my drill it still uploaded after the tests failed with exit code 1.
+
+### My pipeline
+
+**Why does every UI job install Chromium?**
+The login setup project has no browser setting, so it runs in Chromium, and every browser job runs
+setup first on an empty machine. CI exposes assumptions that a local machine with every browser
+installed hides.
+
+**How did you choose the number of CI workers?**
+From measurements: with one worker each browser job spent about 70 s on tests; with two (the runner
+has four cores) Chromium went from 69 s to 19 s, Firefox from 67 s to 36 s and WebKit from 75 s to
+44 s, with no flaky tests. Per-step timings separated test speed from GitHub's job queue.
+
+**How did you prove the pipeline can actually fail?**
+A deliberately failing test turned the pull request red, ran with two retries, failed in all three
+browsers separately because `fail-fast` is off, and still uploaded the report.
+
+### Break drills
+
+**What does a missing secret look like in a run?**
+The log shows the real secret as `***` and the missing one as an empty value; the auth setup stopped
+the whole run at load time with its fail-fast message, before any test started.

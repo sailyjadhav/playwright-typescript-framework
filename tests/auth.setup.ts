@@ -12,7 +12,9 @@ const email = process.env.TEST_USER_EMAIL;
 const password = process.env.TEST_USER_PASSWORD;
 
 if (!email || !password) {
-  throw new Error('Missing TEST_USER_EMAIL or TEST_USER_PASSWORD in .env');
+  throw new Error(
+    'TEST_USER_EMAIL or TEST_USER_PASSWORD is missing: set them in .env locally (see .env.example), or as repository secrets in CI.',
+  );
 }
 
 setup('authenticate', async ({ loginPage, homePage }) => {

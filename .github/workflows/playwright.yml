@@ -1,0 +1,74 @@
+# Runs the quality gate, then the API and UI tests, on every pull request and every push to main.
+name: Playwright tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Not a secret, so it is written here; the test account comes from repository secrets below.
+env:
+  BASE_URL: https://automationexercise.com
+
+jobs:
+  # Typecheck, lint and format check first: seconds, and the test jobs only start if this passes.
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run quality
+
+  # API tests need no browser, so they run once in their own job.
+  api:
+    name: API tests
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright test --project=api
+
+  # One job per browser, in parallel; fail-fast is off so every browser reports its result.
+  ui:
+    name: UI tests (${{ matrix.project }})
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+    env:
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Chromium is always installed because the login setup project runs in Chromium.
+      - run: npx playwright install --with-deps chromium ${{ matrix.project }}
+      # The account-creating hybrid test is left out of PR runs; it is run deliberately.
+      - run: npx playwright test --project=${{ matrix.project }} --grep-invert @creates-account
+      # Upload the report even when tests fail: that is when it is needed most.
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 14
